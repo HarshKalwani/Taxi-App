@@ -1,12 +1,16 @@
-import { useState } from 'react'
-import { Link} from 'react-router-dom'
+import React, { useState } from 'react'
+import { Link, useNavigate} from 'react-router-dom'
+import axios from 'axios'
+import {CaptainDataContext} from '../context/CaptainContext'
 const CaptainLogin = () => {
   const [captainData, setCaptainData] = useState({
     email: '',
     password: ''
   })
 
-  // const [userData , setUserData] = useState({});
+  const {captain , setCaptain} = React.useContext(CaptainDataContext);
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setCaptainData({
@@ -14,14 +18,21 @@ const CaptainLogin = () => {
     })
   }
 
-  const submitHandler = (e) => {
+  const submitHandler = async(e) => {
     e.preventDefault();
-    console.log("formData", captainData)
-    // setUserData({
-    //   email:formData.email,
-    //   password:formData.password
-    // })
-    // console.log('userData', userData)
+    const captainDetails = {
+      email:captainData.email,
+      password:captainData.password
+    }
+
+    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/captains/login`,captainDetails)
+    if(response.status === 200){
+      const data = response.data
+      setCaptain(data.captain)
+      localStorage.setItem('token',data.token);
+      navigate('/captain-home')
+    }
+
     setCaptainData({
       email: '',
       password: ''
@@ -31,7 +42,7 @@ const CaptainLogin = () => {
     <div className='p-7 h-screen flex flex-col justify-between'>
       <div>
         <img src="https://cdn.pixabay.com/photo/2016/08/16/14/35/taxi-1598104_1280.png" alt="" className=" w-24 mb-10" />
-        <form onSubmit={(e) => { submitHandler(e) }}>
+        <form onSubmit={submitHandler}>
           <h3 className='text-lg font-medium mb-2'>Whats your email</h3>
           <input type="text"
             name='email'
